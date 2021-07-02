@@ -16,7 +16,7 @@ python3 socialosint.py
 - you need to give your credentials here 
 
 ```
-only for insta & linkedin you need to give
+only for instagram & linkedin you need to give
 ```
 
 ```
@@ -30,4 +30,15 @@ only for insta & linkedin you need to give
         "password":"password"
     }
 }
+```
+
+# Examples
+
+# Instagram example:
+```
+python3 socialosint.py --credentials credentials.json --instagram --info España
+python3 socialosint.py --credentials credentials.json --instagram --location 832578276
+python3 socialosint.py --credentials credentials.json --instagram --hashtag-ig someHashtag --pwndb
+python3 socialosint.py --credentials credentials.json --instagram --target-ig username --pwndb
+python3 socialosint.py --credentials credentials.json --instagram --target-ig username --followers-ig --followings-ig --pwndb
 ```
