@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# imports
 from core.colors import colors
 import os
 def banner():
@@ -7,4 +11,3 @@ def banner():
     for line in ban:
         centered = line.center(os.get_terminal_size().columns)
         print(colors.BOLD + centered + colors.end)
-banner()
