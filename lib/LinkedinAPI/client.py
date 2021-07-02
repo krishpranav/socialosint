@@ -12,3 +12,11 @@ logger.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+
+
+class ChallengeException(Exception):
+    pass
+
+
+class UnauthorizedException(Exception):
+    pass
