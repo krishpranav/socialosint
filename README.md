@@ -10,3 +10,20 @@ cd socialosint
 python3 -m pip install -r requirements.txt
 python3 socialosint.py
 ```
+
+# Usage
+
+- you need to give your credentials here ```only for insta & linkedin``
+
+```
+{
+    "instagram":{
+        "username":"username",
+        "password":"password"
+    },
+    "linkedin":{
+        "email":"email",
+        "password":"password"
+    }
+}
+```
