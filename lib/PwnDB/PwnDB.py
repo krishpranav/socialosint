@@ -3,7 +3,8 @@
 
 # imports
 import requests, json, time, random, sys
-from core.colors import colors
+# from core.colors import colors
+from modules.colors import colors
 
 def haveIBeenPwned(email):
     

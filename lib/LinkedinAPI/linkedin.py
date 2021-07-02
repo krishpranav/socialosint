@@ -6,7 +6,7 @@ from time import sleep
 from urllib.parse import urlencode
 from .utils.helpers import get_id_from_urn
 from .client import Client
-from core.colors import colors
+from modules.colors import colors
 logging.getLogger("requests").setLevel(logging.INFO)
 logging.getLogger("requests").setLevel(logging.DEBUG)
 logging.getLogger("requests").setLevel(logging.WARNING)
