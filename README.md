@@ -13,7 +13,11 @@ python3 socialosint.py
 
 # Usage
 
-- you need to give your credentials here ```only for insta & linkedin``
+- you need to give your credentials here 
+
+```
+only for insta & linkedin you need to give
+```
 
 ```
 {
