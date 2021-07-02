@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys, json
 from lib.InstagramAPI import InstagramAPI
-from lib.LinkedInAPI import Linkedin
+from lib.LinkedinAPI import Linkedin
 from lib.PwnDB import PwnDB
 
 from modules import instagram

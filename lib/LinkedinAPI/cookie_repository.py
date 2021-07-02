@@ -5,7 +5,7 @@
 import os
 import pickle
 import time
-import lib.LinkedInAPI.settings as settings
+import lib.LinkedinAPI.settings as settings
 
 
 class Error(Exception):

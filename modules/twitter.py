@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import json, re
 from modules.colors import colors
-from lib.TwitterAPI import Twitter
+from lib.TwitterAPI import TwitterAPI
 
 
 def getTweetEmailsFromHashtag(query,limit,year,since,until):

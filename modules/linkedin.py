@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys, json, time
 from modules.colors import colors
-from lib.LinkedInAPI import Linkedin
+from lib.LinkedinAPI import Linkedin
 from lib.PwnDB import PwnDB
 
 def getCompanyInformation(api,companyID):
