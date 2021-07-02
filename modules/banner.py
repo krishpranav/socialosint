@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # imports
-from core.colors import colors
+from modules.colors import colors
 import os
 def banner():
     
