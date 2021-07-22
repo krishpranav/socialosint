@@ -3,6 +3,17 @@
 
 import argparse
 
+try:
+    import argparse
+    import moviepy
+    import requests-toolbelt
+    import PySocks
+    import requests
+    import twint
+except ImportError:
+      print('Requirements not satisfied pls install it by typing this command\n.')
+      print('python3 -m pip install -r requirements.txt')
+
 from modules.main import run
 import modules.banner as banner
 
