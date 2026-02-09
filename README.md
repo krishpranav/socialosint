@@ -172,23 +172,6 @@ sudo systemctl start tor  # Linux
 - `--followers-tw` - Get followers
 - `--followings-tw` - Get followings
 
-## Architecture
-
-```
-src/
-├── main.rs          # Entry point
-├── cli.rs           # CLI argument parsing (clap)
-├── core.rs          # Business logic orchestration
-├── http.rs          # Security-hardened HTTP client
-├── instagram.rs     # Instagram API implementation
-├── linkedin.rs      # LinkedIn API implementation
-├── twitter.rs       # Twitter API implementation
-├── pwndb.rs         # PwnDB integration
-├── tui.rs           # Terminal UI (ratatui)
-├── logger.rs        # Colored logging
-└── telemetry.rs     # Metrics and tracing
-```
-
 ## Security Features
 
 - **User-Agent Rotation**: Random browser User-Agents
@@ -228,7 +211,7 @@ src/
 - Increase delays in `src/http.rs`
 - Use fewer concurrent requests
 
-## Development
+## Development:
 
 **Run tests:**
 ```bash
@@ -246,8 +229,7 @@ cargo build --release
 ```
 
 ## License
-
-Same as original Python version.
+- [MIT](./LICENSE)
 
 ## Credits
 
