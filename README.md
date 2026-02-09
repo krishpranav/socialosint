@@ -1,73 +1,254 @@
-# socialosint
-A python osint tool for getting emails, from a target, published in social networks like Instagram, Linkedin and Twitter for finding the possible credential leaks in PwnDB
+# Social OSINT (Rust Edition)
+A high-performance Rust implementation of the Social OSINT tool for gathering emails from Instagram, LinkedIn, and Twitter, with integrated PwnDB leak checking.
 
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-rust.svg)](https://forthebadge.com)
 
-# Installation
+## Features
+
+- **Instagram**: Search users by hashtag, location, username; extract emails from profiles and bios
+- **LinkedIn**: Search companies and people; retrieve contact information
+- **Twitter**: Search tweets and extract emails (placeholder implementation)
+- **PwnDB**: Check for leaked credentials via Tor proxy
+- **Security**: Anti-ban features including User-Agent rotation, request jitter, and rate limiting
+- **Performance**: Async/await with Tokio, connection pooling, and parallel processing
+- **Observability**: Structured logging with tracing
+
+## Installation
+
+### Prerequisites
+
+- Rust 1.70+ (`rustup` recommended)
+- Tor service (for PwnDB functionality)
+
+### Build
+
+```bash
+cargo build --release
 ```
-git clone https://github.com/krishpranav/socialosint
-cd socialosint
-python3 -m pip install -r requirements.txt
-python3 socialosint.py
-```
 
-# Usage
+The binary will be located at `target/release/socialosint`.
 
-- you need to give your credentials here 
+## Configuration
 
-```
-only for instagram & linkedin you need to give
-```
+Create a `credentials.json` file with your Instagram and LinkedIn credentials:
 
-```
+```json
 {
-    "instagram":{
-        "username":"username",
-        "password":"password"
-    },
-    "linkedin":{
-        "email":"email",
-        "password":"password"
-    }
+  "instagram": {
+    "username": "your_instagram_username",
+    "password": "your_instagram_password"
+  },
+  "linkedin": {
+    "email": "your_linkedin_email",
+    "password": "your_linkedin_password"
+  }
 }
 ```
 
-# Examples
+## Usage
 
-# Instagram example:
-```
-python3 socialosint.py --credentials credentials.json --instagram --info somename
-python3 socialosint.py --credentials credentials.json --instagram --location 832578276
-python3 socialosint.py --credentials credentials.json --instagram --hashtag-ig someHashtag --pwndb
-python3 socialosint.py --credentials credentials.json --instagram --target-ig username --pwndb
-python3 socialosint.py --credentials credentials.json --instagram --target-ig username --followers-ig --followings-ig --pwndb
+### Instagram
+
+**Search by hashtag:**
+```bash
+./target/release/socialosint --credentials credentials.json --instagram --hashtag-ig security
 ```
 
-# Linkedin example:
-```
-python3 socialosint.py --credentials credentials.json --linkedin --search-companies "My Target"
-python3 socialosint.py --credentials credentials.json --linkedin --search-companies "My Target" --employees --pwndb
-python3 socialosint.py --credentials credentials.json --linkedin --company 123456789 --employees --pwndb
-python3 socialosint.py --credentials credentials.json --linkedin --company 123456789 --employees --add-contacts
-python3 socialosint.py --credentials credentials.json --linkedin --user-contacts user-id --pwndb
-python3 socialosint.py --credentials credentials.json --linkedin --user-contacts user-id --add-contacts
+**Search by location:**
+```bash
+# First, find location IDs
+./target/release/socialosint --credentials credentials.json --instagram --info "New York"
+
+# Then search by location ID
+./target/release/socialosint --credentials credentials.json --instagram --location 12345
 ```
 
-# Twitter example:
-```
-python3 socialosint.py --credentials credentials.json --twitter --hashtag-tw someHashtag --pwndb --limit 200
-python3 socialosint.py --credentials credentials.json --twitter --target-tw username --all-tw --pwndb
-python3 socialosint.py --credentials credentials.json --twitter --target-tw username --all-tw --followers-tw --followings-tw --pwndb
+**Target specific user:**
+```bash
+./target/release/socialosint --credentials credentials.json --instagram --target-ig username
 ```
 
-# Multiple Target:
+**Get followers/followings:**
+```bash
+./target/release/socialosint --credentials credentials.json --instagram --target-ig username --followers-ig
+./target/release/socialosint --credentials credentials.json --instagram --target-ig username --followings-ig
 ```
-python3 socialosint.py --credentials credentials.json --instagram --target-ig username --followers-ig --followings-ig --linkedin --company 123456789 --employees --twitter --target-tw username --all-tw --pwndb --output results.txt
 
-python3 socialosint.py --credentials credentials.json --instagram --target-ig username --linkedin --target-in username --twitter --target-tw username --all-tw --pwndb
+### LinkedIn
+
+**Search companies:**
+```bash
+./target/release/socialosint --credentials credentials.json --linkedin --search-companies "Google"
 ```
 
-- Disclainer:
+**Get company employees:**
+```bash
+./target/release/socialosint --credentials credentials.json --linkedin --search-companies "Google" --employees
 ```
-Use this tool for legal purpose. Author will not be responsible for any damage!.
+
+**Search users:**
+```bash
+./target/release/socialosint --credentials credentials.json --linkedin --search-users-in "John Doe"
 ```
+
+**Get user contact info:**
+```bash
+./target/release/socialosint --credentials credentials.json --linkedin --target-in username
+```
+
+### Twitter
+
+**Search tweets by hashtag:**
+```bash
+./target/release/socialosint --credentials credentials.json --twitter --hashtag-tw security --limit 100
+```
+
+**Search user tweets:**
+```bash
+./target/release/socialosint --credentials credentials.json --twitter --target-tw username --all-tw
+```
+
+### PwnDB Integration
+
+**Check for leaks:**
+```bash
+# Start Tor service first
+brew services start tor  # macOS
+# or
+sudo systemctl start tor  # Linux
+
+# Run with PwnDB
+./target/release/socialosint --credentials credentials.json --instagram --target-ig username --pwndb
+```
+
+### Save Results
+
+```bash
+./target/release/socialosint --credentials credentials.json --instagram --hashtag-ig security --output results.txt
+```
+
+## CLI Arguments
+
+### General
+- `--credentials <FILE>` - JSON credentials file (required)
+- `--output <FILE>` - Save results to file
+- `--pwndb` - Enable PwnDB leak checking
+- `--tor-proxy <PROXY>` - Tor proxy address (default: `127.0.0.1:9050`)
+
+### Instagram
+- `--instagram` - Enable Instagram mode
+- `--info <QUERY>` - Get location IDs
+- `--location <ID>` - Search by location
+- `--hashtag-ig <TAG>` - Search by hashtag
+- `--target-ig <USERNAME>` - Target specific user
+- `--search-users-ig <QUERY>` - Search users
+- `--my-followers` - Get own followers
+- `--my-followings` - Get own followings
+- `--followers-ig` - Get target's followers
+- `--followings-ig` - Get target's followings
+
+### LinkedIn
+- `--linkedin` - Enable LinkedIn mode
+- `--company <ID>` - Get company info
+- `--search-companies <QUERY>` - Search companies
+- `--employees` - Get employees
+- `--my-contacts` - Get own contacts
+- `--user-contacts <ID>` - Get user's contacts
+- `--search-users-in <QUERY>` - Search users
+- `--target-in <USERNAME>` - Target specific user
+- `--add-contacts` - Send connection requests to all
+- `--add-a-contact <ID>` - Send connection request to one user
+
+### Twitter
+- `--twitter` - Enable Twitter mode
+- `--limit <N>` - Tweet limit (default: 100)
+- `--year <YEAR>` - Filter by year
+- `--since <DATE>` - Filter tweets since date
+- `--until <DATE>` - Filter tweets until date
+- `--profile-full` - Full profile scraping
+- `--all-tw` - All tweets
+- `--target-tw <USERNAME>` - Target user
+- `--hashtag-tw <TAG>` - Search hashtag
+- `--followers-tw` - Get followers
+- `--followings-tw` - Get followings
+
+## Architecture
+
+```
+src/
+├── main.rs          # Entry point
+├── cli.rs           # CLI argument parsing (clap)
+├── core.rs          # Business logic orchestration
+├── http.rs          # Security-hardened HTTP client
+├── instagram.rs     # Instagram API implementation
+├── linkedin.rs      # LinkedIn API implementation
+├── twitter.rs       # Twitter API implementation
+├── pwndb.rs         # PwnDB integration
+├── tui.rs           # Terminal UI (ratatui)
+├── logger.rs        # Colored logging
+└── telemetry.rs     # Metrics and tracing
+```
+
+## Security Features
+
+- **User-Agent Rotation**: Random browser User-Agents
+- **Request Jitter**: 500ms-2s delays between requests
+- **Rate Limiting**: Per-domain throttling
+- **Cloudflare Detection**: Automatic blocking detection
+- **Cookie Management**: Persistent session handling
+- **Connection Pooling**: Reuse HTTP connections
+
+## Performance
+
+- **Async/Await**: Tokio runtime for concurrent operations
+- **Connection Pooling**: Reuse connections across requests
+- **Parallel Processing**: Multiple targets processed concurrently
+- **Memory Efficient**: Streaming results, minimal allocations
+
+## Limitations
+
+- **Twitter**: The Twitter module is a placeholder. Full implementation requires Twitter API credentials or a scraping library.
+- **HaveIBeenPwned**: Placeholder implementation - requires proper API key and headers.
+
+## Troubleshooting
+
+**Instagram login fails:**
+- Verify credentials in `credentials.json`
+- Instagram may require 2FA or CAPTCHA solving
+
+**LinkedIn authentication fails:**
+- Check credentials
+- LinkedIn may require email verification
+
+**PwnDB not working:**
+- Ensure Tor service is running: `brew services list` or `systemctl status tor`
+- Verify proxy address: default is `127.0.0.1:9050`
+
+**Rate limiting:**
+- Increase delays in `src/http.rs`
+- Use fewer concurrent requests
+
+## Development
+
+**Run tests:**
+```bash
+cargo test
+```
+
+**Run with debug logging:**
+```bash
+RUST_LOG=debug ./target/release/socialosint --credentials credentials.json --instagram --target-ig username
+```
+
+**Build optimized:**
+```bash
+cargo build --release
+```
+
+## License
+
+Same as original Python version.
+
+## Credits
+
+Rust port by Krishna Pranav. Original Python implementation: [socialosint](https://github.com/krishpranav/socialosint).
