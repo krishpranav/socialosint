@@ -1,0 +1,40 @@
+[package]
+name = "socialosint"
+version = "1.0.0"
+edition = "2021"
+authors = ["Krishna Pranav"]
+description = "A Rust OSINT tool for getting emails from Instagram, LinkedIn and Twitter"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json", "cookies", "socks"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+indicatif = "0.17"
+ratatui = "0.26"
+crossterm = "0.27"
+cookie_store = "0.20"
+thiserror = "1"
+anyhow = "1"
+rand = "0.8"
+dashmap = "5"
+metrics = "0.21"
+opentelemetry = "0.20"
+regex = "1"
+uuid = { version = "1", features = ["v4"] }
+hmac = "0.12"
+sha2 = "0.10"
+base64 = "0.21"
+chrono = "0.4"
+md5 = "0.7"
+url = "2"
+once_cell = "1"
+hex = "0.4"
+term_size = "0.3"
+
+[dev-dependencies]
+criterion = "0.5"
+
