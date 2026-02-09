@@ -1,2 +1,6 @@
 .vsocde/
 env
+
+# Added by cargo
+
+/target
