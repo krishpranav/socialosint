@@ -190,8 +190,14 @@ sudo systemctl start tor  # Linux
 
 ## Limitations
 
-- **Twitter**: The Twitter module is a placeholder. Full implementation requires Twitter API credentials or a scraping library.
-- **HaveIBeenPwned**: Placeholder implementation - requires proper API key and headers.
+- **Twitter**: Requires Twitter API v2 bearer token for full functionality. Falls back to Nitter scraping if unavailable.
+- **HaveIBeenPwned**: Requires HIBP API key for full functionality. Set `HIBP_API_KEY` environment variable.
+
+## Environment Variables
+
+- `TWITTER_BEARER_TOKEN`: (Optional) Twitter API v2 bearer token. Get one at https://developer.twitter.com/
+- `HIBP_API_KEY`: (Optional) HaveIBeenPwned API key for breach checking. Get one at https://haveibeenpwned.com/API/Key
+- `RUST_LOG`: Set logging level (e.g., `debug`, `info`, `warn`, `error`)
 
 ## Troubleshooting
 
