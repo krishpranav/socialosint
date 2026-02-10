@@ -39,4 +39,8 @@ sha1 = "0.10"
 
 [dev-dependencies]
 criterion = "0.5"
+mockito = "1.2"
+tokio-test = "0.4"
+wiremock = "0.6"
+tempfile = "3"
 
