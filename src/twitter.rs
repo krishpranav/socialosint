@@ -1,3 +1,4 @@
+use crate::core::Core;
 use anyhow::{Context, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -18,18 +19,12 @@ pub struct UserResult {
 }
 
 pub struct TwitterAPI {
-    client: reqwest::Client,
+    core: Core,
 }
 
 impl TwitterAPI {
-    pub fn new() -> Self {
-        let client = reqwest::Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
-            .cookie_store(true)
-            .build()
-            .expect("Failed to create HTTP client");
-
-        Self { client }
+    pub fn new(core: Core) -> Self {
+        Self { core }
     }
 
     pub async fn get_tweets(
@@ -46,7 +41,7 @@ impl TwitterAPI {
             return Ok(Vec::new());
         };
 
-        crate::logger::info(&format!(
+        self.core.logger.info(&format!(
             "Searching Twitter for '{}' (limit: {})",
             query, limit
         ));
@@ -64,19 +59,23 @@ impl TwitterAPI {
                 tweets.extend(api_tweets);
             }
             Err(_) => {
-                crate::logger::bad("Twitter API access requires authentication. Trying alternative scraping method...");
+                self.core.logger.bad("Twitter API access requires authentication. Trying alternative scraping method...");
 
                 match self.try_nitter_scrape(username, hashtag, limit).await {
                     Ok(nitter_tweets) => {
                         tweets.extend(nitter_tweets);
                     }
                     Err(_) => {
-                        crate::logger::bad(
-                            "Alternative scraping failed. Twitter data collection requires:",
-                        );
-                        crate::logger::info("1. Twitter API credentials (Bearer token)");
-                        crate::logger::info("2. Or a working Nitter instance");
-                        crate::logger::info("3. Or a third-party scraping service");
+                        self.core
+                            .logger
+                            .bad("Alternative scraping failed. Twitter data collection requires:");
+                        self.core
+                            .logger
+                            .info("1. Twitter API credentials (Bearer token)");
+                        self.core.logger.info("2. Or a working Nitter instance");
+                        self.core
+                            .logger
+                            .info("3. Or a third-party scraping service");
 
                         return Ok(Vec::new());
                     }
@@ -84,7 +83,9 @@ impl TwitterAPI {
             }
         }
 
-        crate::logger::good(&format!("Collected {} tweets", tweets.len()));
+        self.core
+            .logger
+            .good(&format!("Collected {} tweets", tweets.len()));
         Ok(tweets)
     }
 
@@ -93,7 +94,9 @@ impl TwitterAPI {
             std::env::var("TWITTER_BEARER_TOKEN").context("TWITTER_BEARER_TOKEN not set")?;
 
         let response = self
-            .client
+            .core
+            .http
+            .raw_client()
             .get(url)
             .header("Authorization", format!("Bearer {}", bearer_token))
             .send()
@@ -146,7 +149,9 @@ impl TwitterAPI {
 
             match self.scrape_nitter_page(&url, limit).await {
                 Ok(tweets) if !tweets.is_empty() => {
-                    crate::logger::good(&format!("Successfully scraped from {}", instance));
+                    self.core
+                        .logger
+                        .good(&format!("Successfully scraped from {}", instance));
                     return Ok(tweets);
                 }
                 _ => continue,
@@ -157,7 +162,7 @@ impl TwitterAPI {
     }
 
     async fn scrape_nitter_page(&self, url: &str, limit: usize) -> Result<Vec<Tweet>> {
-        let response = self.client.get(url).send().await?;
+        let response = self.core.http.raw_client().get(url).send().await?;
 
         if !response.status().is_success() {
             anyhow::bail!("Nitter returned status: {}", response.status());
@@ -191,118 +196,6 @@ impl TwitterAPI {
 
         Ok(tweets)
     }
-
-    pub async fn get_followers(&self, username: &str, limit: usize) -> Result<Vec<String>> {
-        crate::logger::info(&format!("Getting followers of user: {}", username));
-
-        let bearer_token = match std::env::var("TWITTER_BEARER_TOKEN") {
-            Ok(token) => token,
-            Err(_) => {
-                crate::logger::bad("TWITTER_BEARER_TOKEN not set - cannot fetch followers");
-                return Ok(Vec::new());
-            }
-        };
-
-        let user_id = self.get_user_id(username, &bearer_token).await?;
-
-        let url = format!(
-            "https://api.twitter.com/2/users/{}/followers?max_results={}",
-            user_id,
-            limit.min(1000)
-        );
-
-        let response = self
-            .client
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", bearer_token))
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            anyhow::bail!("Twitter API returned status: {}", response.status());
-        }
-
-        let data: Value = response.json().await?;
-        let mut followers = Vec::new();
-
-        if let Some(users) = data["data"].as_array() {
-            for user in users {
-                if let Some(username) = user["username"].as_str() {
-                    followers.push(username.to_string());
-                }
-            }
-        }
-
-        crate::logger::good(&format!("Found {} followers", followers.len()));
-        Ok(followers)
-    }
-
-    pub async fn get_followings(&self, username: &str, limit: usize) -> Result<Vec<String>> {
-        crate::logger::info(&format!("Getting followings of user: {}", username));
-
-        let bearer_token = match std::env::var("TWITTER_BEARER_TOKEN") {
-            Ok(token) => token,
-            Err(_) => {
-                crate::logger::bad("TWITTER_BEARER_TOKEN not set - cannot fetch followings");
-                return Ok(Vec::new());
-            }
-        };
-
-        let user_id = self.get_user_id(username, &bearer_token).await?;
-
-        let url = format!(
-            "https://api.twitter.com/2/users/{}/following?max_results={}",
-            user_id,
-            limit.min(1000)
-        );
-
-        let response = self
-            .client
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", bearer_token))
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            anyhow::bail!("Twitter API returned status: {}", response.status());
-        }
-
-        let data: Value = response.json().await?;
-        let mut followings = Vec::new();
-
-        if let Some(users) = data["data"].as_array() {
-            for user in users {
-                if let Some(username) = user["username"].as_str() {
-                    followings.push(username.to_string());
-                }
-            }
-        }
-
-        crate::logger::good(&format!("Found {} followings", followings.len()));
-        Ok(followings)
-    }
-
-    async fn get_user_id(&self, username: &str, bearer_token: &str) -> Result<String> {
-        let url = format!("https://api.twitter.com/2/users/by/username/{}", username);
-
-        let response = self
-            .client
-            .get(&url)
-            .header("Authorization", format!("Bearer {}", bearer_token))
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            anyhow::bail!("Failed to get user ID for {}", username);
-        }
-
-        let data: Value = response.json().await?;
-
-        data["data"]["id"]
-            .as_str()
-            .map(|s| s.to_string())
-            .context("User ID not found in response")
-    }
 }
 
 pub fn extract_email_from_tweet(tweet: &str) -> Option<String> {
@@ -315,12 +208,12 @@ pub fn extract_email_from_tweet(tweet: &str) -> Option<String> {
     None
 }
 
-pub fn extract_emails_from_tweets(tweets: Vec<Tweet>) -> Vec<UserResult> {
+pub fn extract_emails_from_tweets(tweets: Vec<Tweet>, core: &Core) -> Vec<UserResult> {
     let mut results = Vec::new();
 
     for tweet in tweets {
         if let Some(email) = extract_email_from_tweet(&tweet.tweet) {
-            crate::logger::good(&format!(
+            core.logger.good(&format!(
                 "Username: {} UserID: {} Email: {}",
                 tweet.username, tweet.user_id, email
             ));
